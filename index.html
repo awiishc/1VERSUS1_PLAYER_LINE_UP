@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>1VERSUS1 — Player Line-Up</title>
+  <meta name="description" content="1VERSUS1 player line-up with interactive trading card preview." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Permanent+Marker&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black: #030303;
+      --white: #ffffff;
+      --red: #d71920;
+      --dark-gray: #151515;
+      --muted-gray: #5f5f5f;
+      --page-width: 100vw;
+      --banner-ratio: 42.1875%;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      background: var(--black);
+      color: var(--white);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      width: 100%;
+      background:
+        radial-gradient(circle at 50% 13%, rgba(215, 25, 32, 0.12), transparent 20rem),
+        linear-gradient(180deg, #000 0%, #050505 45%, #000 100%);
+      font-family: Arial, Helvetica, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .page {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      background: #000;
+      position: relative;
+      box-shadow: none;
+    }
+
+    .brand-hero {
+      min-height: clamp(230px, 58vw, 520px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: clamp(28px, 5vw, 58px) 0 clamp(24px, 4vw, 52px);
+      background:
+        radial-gradient(circle at center 25%, rgba(215, 25, 32, 0.11), transparent 120px),
+        #000;
+    }
+
+    .brand-logo {
+      width: clamp(180px, 32vw, 340px);
+      height: auto;
+      display: block;
+      object-fit: contain;
+      margin: 0 auto clamp(22px, 4.2vw, 46px);
+      filter: drop-shadow(0 0 8px rgba(215, 25, 32, .18));
+    }
+
+    .lineup-title {
+      width: min(72vw, 470px);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+
+    .lineup-title img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: contain;
+      filter: drop-shadow(0 7px 0 rgba(0,0,0,.7)) drop-shadow(0 0 18px rgba(215,25,32,.22));
+    }
+
+    .roster {
+      display: grid;
+      gap: clamp(24px, 6.3vw, 64px);
+      padding: 0 0 clamp(34px, 8vw, 78px);
+      background: #000;
+    }
+
+    .player-row {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 2048 / 864;
+      background: var(--dark-gray);
+      overflow: hidden;
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.04),
+        0 0 30px rgba(215,25,32,.08);
+    }
+
+    .player-row img.banner {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .card-hit {
+      position: absolute;
+      left: 12.3%;
+      top: 13%;
+      width: 18.4%;
+      height: 73%;
+      padding: 0;
+      border: 0;
+      border-radius: 2px;
+      background: transparent;
+      cursor: pointer;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+      overflow: visible;
+    }
+
+    .card-button-img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,.2);
+      box-shadow: 0 0 12px rgba(0,0,0,.55);
+      pointer-events: none;
+      transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
+    }
+
+    .card-hit:hover .card-button-img,
+    .card-hit:focus-visible .card-button-img {
+      transform: scale(1.035);
+      filter: brightness(1.1);
+      box-shadow: 0 0 18px rgba(215,25,32,.9), 0 0 28px rgba(255,255,255,.18);
+    }
+
+    .card-hit::before {
+      content: "";
+      position: absolute;
+      inset: -6px;
+      border: 1px solid rgba(255,255,255,.0);
+      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+
+    .card-hit:hover::before,
+    .card-hit:focus-visible::before {
+      border-color: rgba(255,255,255,.75);
+      box-shadow: 0 0 18px rgba(215,25,32,.85), inset 0 0 18px rgba(215,25,32,.12);
+      background: rgba(215,25,32,.06);
+    }
+
+    .description {
+      padding: 0 52px 36px;
+      text-align: center;
+      color: rgba(255,255,255,.86);
+      font-size: 5.8px;
+      line-height: 1.45;
+      letter-spacing: .01em;
+      text-wrap: balance;
+    }
+
+    .footer {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      align-items: center;
+      gap: 8px;
+      padding: 0 13px 21px;
+      color: rgba(255,255,255,.82);
+      font-size: 4.5px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .footer div:nth-child(2) { text-align: center; }
+    .footer div:nth-child(3) { text-align: right; }
+    .footer .redmark { color: var(--red); }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 25px 18px;
+      background: rgba(0,0,0,.82);
+      backdrop-filter: blur(12px);
+    }
+
+    .modal.is-open { display: flex; }
+
+    .modal-shell {
+      position: relative;
+      width: min(86vw, 390px);
+      perspective: 1400px;
+    }
+
+    .close-modal {
+      position: absolute;
+      right: -8px;
+      top: -46px;
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(255,255,255,.45);
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(0,0,0,.65);
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(215,25,32,.25);
+    }
+
+    .flip-card {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1447 / 2048;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      cursor: pointer;
+      transform-style: preserve-3d;
+      transition: transform .75s cubic-bezier(.2,.8,.2,1);
+      filter:
+        drop-shadow(0 0 12px rgba(255,255,255,.15))
+        drop-shadow(0 0 34px rgba(215,25,32,.55));
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .flip-card.is-flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      overflow: hidden;
+      border-radius: 6px;
+      background: #050505;
+    }
+
+    .card-front {
+      transform: rotateY(0deg);
+    }
+
+    .card-face img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .card-back {
+      transform: rotateY(180deg);
+    }
+
+    .modal-hint {
+      margin-top: 13px;
+      text-align: center;
+      color: rgba(255,255,255,.78);
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    @media (min-width: 700px) {
+      .description { font-size: clamp(8px, .8vw, 12px); padding-inline: 14vw; }
+      .footer { font-size: clamp(6px, .55vw, 9px); padding-inline: 3vw; }
+    }
+
+    @media (min-width: 1100px) {
+      .modal-shell { width: min(42vw, 430px); }
+    }
+
+
+    @media (max-width: 699px) {
+      .brand-logo {
+        width: clamp(150px, 54vw, 230px);
+        margin-bottom: clamp(22px, 7vw, 38px);
+      }
+
+      .lineup-title {
+        width: min(82vw, 390px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .flip-card { transition: none; }
+      .card-hit::before { transition: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <header class="brand-hero" aria-label="1VERSUS1 Player Line-Up">
+      <img class="brand-logo" src="assets/web-logo.png" alt="1VERSUS1 logo">
+      <div class="lineup-title" aria-label="Player Line-Up">
+        <img src="assets/player-lineup-title.png" alt="PLAYER LINE-UP">
+      </div>
+    </header>
+
+    <section class="roster" id="roster" aria-label="Player roster"></section>
+
+    <section class="description">
+      1VERSUS1 is an intense futsal showdown where individual skill, creativity, and mentality are put to the test.
+      Every match is a fast-paced battle between two players competing head-to-head in a high-pressure environment.
+      With quick rounds, attacking challenges, and clutch defending moments, only the strongest player survives and proves themselves on the court.
+      No teammates. No excuses. Just pure 1v1 futsal.
+    </section>
+
+    <footer class="footer">
+      <div>VOL. 1</div>
+      <div>ALL RIGHT RESERVED / <span class="redmark">1VERSUS1</span></div>
+      <div>2026</div>
+    </footer>
+  </main>
+
+  <div class="modal" id="cardModal" role="dialog" aria-modal="true" aria-label="Player card preview">
+    <div class="modal-shell">
+      <button class="close-modal" type="button" aria-label="Close card preview">×</button>
+      <button class="flip-card" type="button" aria-label="Flip player card">
+        <span class="card-face card-front"><img alt=""></span>
+        <span class="card-face card-back"><img alt=""></span>
+      </button>
+      <div class="modal-hint">Tap card to flip</div>
+    </div>
+  </div>
+
+  <script>
+    const CARD_BACK = "assets/cards/card-back.jpg";
+
+    const players = [
+  {
+    "number": "01",
+    "name": "AFFIQ",
+    "front": "assets/cards/affiq-front.jpg",
+    "back": CARD_BACK,
+    "banner": "assets/banners/affiq.jpg"
+  },
+  {
+    "number": "02",
+    "name": "ADAM",
+    "front": "assets/cards/adam-front.jpg",
+    "back": CARD_BACK,
+    "banner": "assets/banners/adam.jpg"
+  },
+  {
+    "number": "03",
+    "name": "HARIZ",
+    "front": "assets/cards/hariz-front.jpg",
+    "back": CARD_BACK,
+    "banner": "assets/banners/hariz.jpg"
+  },
+  {
+    "number": "04",
+    "name": "LUQMAN",
+    "front": "assets/cards/luqman-front.jpg",
+    "back": CARD_BACK,
+    "banner": "assets/banners/luqman.jpg"
+  },
+  {
+    "number": "05",
+    "name": "MIR",
+    "front": "assets/cards/mir-front.jpg",
+    "back": CARD_BACK,
+    "banner": "assets/banners/mir.jpg"
+  },
+  {
+    "number": "06",
+    "name": "SHAFIK",
+    "front": "assets/cards/shafik-front.jpg",
+    "back": CARD_BACK,
+    "banner": "assets/banners/shafik.jpg"
+  },
+  {
+    "number": "07",
+    "name": "IRHAM",
+    "front": "assets/cards/irham-front.jpg",
+    "back": CARD_BACK,
+    "banner": "assets/banners/irham.jpg"
+  },
+  {
+    "number": "08",
+    "name": "PLAYER",
+    "front": "assets/cards/placeholder-front.jpg",
+    "back": CARD_BACK,
+    "banner": "assets/banners/placeholder.jpg"
+  }
+];
+
+    const roster = document.querySelector("#roster");
+    const modal = document.querySelector("#cardModal");
+    const flipCard = modal.querySelector(".flip-card");
+    const frontImg = modal.querySelector(".card-front img");
+    const backImg = modal.querySelector(".card-back img");
+    const closeButton = modal.querySelector(".close-modal");
+
+    players.forEach((player) => {
+      const row = document.createElement("article");
+      row.className = "player-row";
+      row.setAttribute("aria-label", `${player.number} ${player.name}`);
+
+      const banner = document.createElement("img");
+      banner.className = "banner";
+      banner.src = player.banner;
+      banner.alt = `${player.name} player banner`;
+      banner.loading = "lazy";
+
+      const button = document.createElement("button");
+      button.className = "card-hit";
+      button.type = "button";
+      button.setAttribute("aria-label", `Preview ${player.name} card`);
+
+      const cardButtonImage = document.createElement("img");
+      cardButtonImage.className = "card-button-img";
+      cardButtonImage.src = player.front;
+      cardButtonImage.alt = `${player.name} player card`;
+      cardButtonImage.loading = "lazy";
+
+      button.appendChild(cardButtonImage);
+      button.addEventListener("click", () => openPreview(player));
+
+      row.appendChild(banner);
+      row.appendChild(button);
+      roster.appendChild(row);
+    });
+
+    function openPreview(player) {
+      frontImg.src = player.front;
+      backImg.src = player.back || CARD_BACK;
+      frontImg.alt = `${player.name} card front`;
+      backImg.alt = `1VERSUS1 card back`;
+      flipCard.classList.remove("is-flipped");
+      modal.classList.add("is-open");
+      document.body.style.overflow = "hidden";
+      closeButton.focus();
+    }
+
+    function closePreview() {
+      modal.classList.remove("is-open");
+      flipCard.classList.remove("is-flipped");
+      document.body.style.overflow = "";
+    }
+
+    flipCard.addEventListener("click", () => {
+      flipCard.classList.toggle("is-flipped");
+    });
+
+    closeButton.addEventListener("click", closePreview);
+
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) closePreview();
+    });
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && modal.classList.contains("is-open")) closePreview();
+    });
+  </script>
+</body>
+</html>
